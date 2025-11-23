@@ -3,37 +3,37 @@ export const productCategories = [
     id: "pure-ric",
     name: "Pure RIC",
     description: "Receiver-In-Canal hearing aids with natural sound quality",
-    image: "/modern-hearing-aid-ric-style.jpg",
+    image: "/images/sky-m-hook.avif",
   },
   {
     id: "styletto",
     name: "Styletto Slim RIC",
     description: "Sleek and stylish slim design with premium features",
-    image: "/stylish-slim-hearing-aid.jpg",
+    image: "/images/slim-hearing-aid.avif",
   },
   {
     id: "motion",
     name: "Motion",
     description: "Advanced motion sensors for enhanced hearing experience",
-    image: "/motion-sensor-hearing-aid.jpg",
+    image: "/images/charger-bte-sky-m.avif",
   },
   {
     id: "intuis",
     name: "Intuis 4",
     description: "Intuitive and easy-to-use hearing solutions",
-    image: "/intuitive-hearing-aid.jpg",
+    image: "/images/custom-lineup.jpg",
   },
   {
     id: "insio",
     name: "Insio Custom",
     description: "Custom-molded for perfect fit and comfort",
-    image: "/custom-molded-hearing-aid.jpg",
+    image: "/images/virto-titanium-case.jpeg",
   },
   {
     id: "silk",
     name: "Silk",
     description: "Nearly invisible in-ear hearing aids",
-    image: "/invisible-hearing-aid.jpg",
+    image: "/images/panda-hearing-elite.webp",
   },
 ]
 
@@ -143,7 +143,7 @@ export const products = [
     description:
       "Experience natural sound with our most advanced RIC hearing aid featuring AI-powered sound processing.",
     price: "Contact for pricing",
-    image: "/modern-hearing-aid-ric-style.jpg",
+    image: "/images/sky-m-hook.avif",
     features: [
       "Rechargeable with 28-hour battery life",
       "Bluetooth connectivity for calls and music",
@@ -166,7 +166,7 @@ export const products = [
     category: "styletto",
     description: "Award-winning design meets cutting-edge technology in this ultra-slim hearing aid.",
     price: "Contact for pricing",
-    image: "/stylish-slim-hearing-aid.jpg",
+    image: "/images/slim-hearing-aid.avif",
     features: [
       "Ultra-slim and stylish design",
       "Portable charging case",
@@ -189,7 +189,7 @@ export const products = [
     category: "motion",
     description: "Super power hearing aid with motion sensors for enhanced spatial awareness.",
     price: "Contact for pricing",
-    image: "/motion-sensor-hearing-aid.jpg",
+    image: "/images/charger-bte-sky-m.avif",
     features: [
       "Motion sensor technology",
       "Super power for severe hearing loss",
@@ -212,7 +212,7 @@ export const products = [
     category: "intuis",
     description: "Simple, reliable, and easy-to-use behind-the-ear hearing aid.",
     price: "Contact for pricing",
-    image: "/intuitive-hearing-aid.jpg",
+    image: "/images/bte-hearing-aids.jpg",
     features: [
       "Easy-to-use controls",
       "Long-lasting battery",
@@ -235,7 +235,7 @@ export const products = [
     category: "insio",
     description: "Custom-molded in-ear hearing aid with wireless charging.",
     price: "Contact for pricing",
-    image: "/custom-molded-hearing-aid.jpg",
+    image: "/images/virto-titanium-case.jpeg",
     features: [
       "Custom-molded for perfect fit",
       "Rechargeable in-ear design",
@@ -258,7 +258,7 @@ export const products = [
     category: "silk",
     description: "Nearly invisible instant-fit hearing aid with rechargeable convenience.",
     price: "Contact for pricing",
-    image: "/invisible-hearing-aid.jpg",
+    image: "/images/panda-hearing-elite.webp",
     features: [
       "Nearly invisible design",
       "Instant fit - no custom mold needed",
@@ -281,7 +281,7 @@ export const products = [
     category: "pure-ric",
     description: "Reliable RIC hearing aid with essential features at an accessible price.",
     price: "Contact for pricing",
-    image: "/modern-hearing-aid-ric-style.jpg",
+    image: "/images/custom-lineup.jpg",
     features: [
       "Rechargeable convenience",
       "Bluetooth streaming",
@@ -304,7 +304,7 @@ export const products = [
     category: "motion",
     description: "Dual-core processing for superior sound quality in all environments.",
     price: "Contact for pricing",
-    image: "/motion-sensor-hearing-aid.jpg",
+    image: "/images/audien-atom-pro.avif",
     features: [
       "Dual-core processor",
       "Voice Ranger technology",
@@ -328,7 +328,7 @@ export const accessories = [
     name: "StreamLine TV",
     description: "Stream TV audio directly to your hearing aids",
     price: "Contact for pricing",
-    image: "/placeholder.svg?height=200&width=200",
+    image: "/images/virto-titanium-iic.avif",
     category: "streaming",
   },
   {
@@ -336,7 +336,7 @@ export const accessories = [
     name: "StreamLine Mic",
     description: "Remote microphone for better hearing in noisy situations",
     price: "Contact for pricing",
-    image: "/placeholder.svg?height=200&width=200",
+    image: "/images/panda-hearing-elite-2.webp",
     category: "microphones",
   },
   {
@@ -368,7 +368,7 @@ export const accessories = [
     name: "Portable Charging Case",
     description: "Charge on-the-go with this portable case",
     price: "Contact for pricing",
-    image: "/placeholder.svg?height=200&width=200",
+    image: "/images/charger-bte-sky-m.avif",
     category: "chargers",
   },
 ]

@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { branches } from "@/lib/branches-data"
-import { MapPin, Phone, Mail, Clock, CheckCircle2 } from "lucide-react"
+import { MapPin, Phone, Mail, Clock, CheckCircle2, Map } from "lucide-react"
 import { useState } from "react"
 import { useLanguage } from "@/lib/language-context"
 
@@ -198,7 +198,20 @@ export default function BookingPage() {
                 {branches.map((branch) => (
                   <Card key={branch.id}>
                     <CardContent className="p-6">
-                      <h3 className="mb-3 text-lg font-semibold">{branch.city}</h3>
+                      <div className="mb-3 flex items-center justify-between">
+                        <h3 className="text-lg font-semibold">{branch.city}</h3>
+                        {/* Added map icon button that opens Google Maps */}
+                        <button
+                          onClick={() => {
+                            const googleMapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(branch.address)}+${encodeURIComponent(branch.city)}`
+                            window.open(googleMapsUrl, "_blank")
+                          }}
+                          className="rounded-full p-2 hover:bg-primary/10 transition-colors"
+                          title="Open in Google Maps"
+                        >
+                          <Map className="h-5 w-5 text-primary" />
+                        </button>
+                      </div>
                       <div className="space-y-2 text-sm">
                         <div className="flex items-start gap-2">
                           <MapPin className="mt-0.5 h-4 w-4 text-muted-foreground" />

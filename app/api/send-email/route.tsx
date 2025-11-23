@@ -1,43 +1,46 @@
 import { NextResponse } from "next/server"
 import { Resend } from "resend"
 
-// تمت إزالة تهيئة Resend من هذا المكان (Top-Level)
-// حتى لا يتم تشغيله أثناء عملية البناء في Next.js/Netlify.
+// Initialize Resend with API key from environment variables
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: Request) {
   try {
-    // 1. استخراج المتغيرات أولاً للتأكد من وجودها
-    const apiKey = process.env.RESEND_API_KEY
-    const recipientEmail = process.env.RESEND_RECIPIENT_EMAIL
+    const { name, email, message } = await request.json()
 
-    // 2. التحقق من مفاتيح البيئة (Environment Variables)
-    if (!apiKey || !recipientEmail) {
-      // Netlify يخبرنا أن هذا هو سبب فشل البناء
-      console.error("[v0] CRITICAL: Missing RESEND_API_KEY or RESEND_RECIPIENT_EMAIL in environment.")
+    // Validate required fields
+    if (!name || !email || !message) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+    }
+
+    // Check if API key is configured
+    if (!process.env.RESEND_API_KEY) {
+      console.error("[v0] RESEND_API_KEY is not configured")
       return NextResponse.json(
         {
-          error: "Email service not configured. Please add RESEND_API_KEY and RESEND_RECIPIENT_EMAIL to Netlify Environment variables.",
+          error: "Email service not configured. Please add RESEND_API_KEY to environment variables.",
           setupRequired: true,
         },
         { status: 500 },
       )
     }
 
-    // 3. تهيئة Resend داخل الدالة (يتم تنفيذه فقط عند الطلب)
-    const resend = new Resend(apiKey)
-    
-    // 4. استخراج بيانات الطلب
-    const { name, email, message } = await request.json()
-
-    // 5. التحقق من الحقول المطلوبة
-    if (!name || !email || !message) {
-      return NextResponse.json({ error: "Missing required fields (name, email, message)" }, { status: 400 })
+    const recipientEmail = process.env.RESEND_RECIPIENT_EMAIL
+    if (!recipientEmail) {
+      console.error("[v0] RESEND_RECIPIENT_EMAIL is not configured")
+      return NextResponse.json(
+        {
+          error: "Email recipient not configured. Please add RESEND_RECIPIENT_EMAIL to environment variables.",
+          setupRequired: true,
+        },
+        { status: 500 },
+      )
     }
 
-    // 6. إرسال الإيميل
+    // Send email using Resend
     const data = await resend.emails.send({
       from: "HearClear Contact <onboarding@resend.dev>", // Resend verified sender
-      to: [recipientEmail],
+      to: [recipientEmail], // Use environment variable instead of hardcoded email
       replyTo: email, // Customer's email for easy reply
       subject: `New Contact Form Message from ${name}`,
       html: `

@@ -1,11 +1,13 @@
 "use client"
 
 import { MainNavigation } from "@/components/main-navigation"
+import { HeroVideoSection } from "@/components/hero-video-section"
+import { HearingCategoriesCarousel } from "@/components/hearing-categories-carousel"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { EditableText } from "@/components/editable-text"
 import Link from "next/link"
-import { Ear, Heart, Shield, Users, ArrowRight, CheckCircle2, Plus, Trash2 } from "lucide-react"
+import { Ear, Heart, Shield, Users, ArrowRight, CheckCircle2 } from "lucide-react"
 import { productCategories, brands } from "@/lib/hearing-data"
 import { getStoredProducts, getSiteContent, getStoredBrands, addBrand, deleteBrand } from "@/lib/content-store"
 import { useEffect, useState } from "react"
@@ -21,6 +23,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { PerfectSoundSection } from "@/components/perfect-sound-section"
 
 export default function HomePage() {
   const [allProducts, setAllProducts] = useState<any[]>([])
@@ -85,52 +88,14 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <main className="flex min-h-screen flex-col">
       <MainNavigation />
+      <HeroVideoSection />
 
-      <section className="relative overflow-hidden bg-gradient-to-b from-muted/50 to-background pb-16 pt-20 md:pb-24 md:pt-32">
-        <div className="container relative mx-auto max-w-7xl px-4">
-          <div className="mx-auto max-w-3xl text-center">
-            <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl animate-fade-in-up">
-              <EditableText contentKey="home.hero.title" defaultValue="Experience Life in" as="span" />{" "}
-              <span className="text-primary">
-                <EditableText contentKey="home.hero.titleHighlight" defaultValue="Perfect Sound" as="span" />
-              </span>
-            </h1>
-            <p className="mb-8 text-lg text-muted-foreground md:text-xl animate-fade-in-up animation-delay-200">
-              <EditableText
-                contentKey="home.hero.subtitle"
-                defaultValue="Advanced hearing solutions tailored to your lifestyle. Rediscover the joy of clear conversations and the sounds you love."
-                as="span"
-                multiline
-              />
-            </p>
-            <div className="flex flex-col gap-4 sm:flex-row sm:justify-center animate-fade-in-up animation-delay-400">
-              <Button
-                asChild
-                size="lg"
-                className="text-base group transition-all duration-300 hover:scale-105 hover:shadow-lg"
-              >
-                <Link href="/hearing-test">
-                  <EditableText contentKey="home.hero.ctaButton1" defaultValue="Take Free Hearing Test" as="span" />
-                  <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
-                </Link>
-              </Button>
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="text-base transition-all duration-300 hover:scale-105 hover:shadow-lg bg-transparent"
-              >
-                <Link href="/booking">
-                  <EditableText contentKey="home.hero.ctaButton2" defaultValue="Book Appointment" as="span" />
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Perfect Sound Section */}
+      <PerfectSoundSection />
 
+      {/* Why Choose Us Section */}
       <section className="py-16 md:py-24">
         <div className="container mx-auto max-w-7xl px-4">
           <div className="mx-auto max-w-3xl text-center">
@@ -223,6 +188,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Products Section */}
       <section className="bg-muted/50 py-16 md:py-24">
         <div className="container mx-auto max-w-7xl px-4">
           <div className="mx-auto mb-12 max-w-2xl text-center">
@@ -316,6 +282,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Hearing Test Section */}
       <section className="py-16 md:py-24">
         <div className="container mx-auto max-w-7xl px-4">
           <Card className="overflow-hidden bg-gradient-to-r from-primary to-secondary transition-all duration-300 hover:shadow-2xl">
@@ -374,69 +341,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-muted/50 py-16 md:py-24">
-        <div className="container mx-auto max-w-7xl px-4">
-          <div className="mx-auto mb-12 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-bold md:text-4xl">
-              <EditableText contentKey="home.brands.title" defaultValue="Trusted Brands" as="span" />
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              <EditableText
-                contentKey="home.brands.subtitle"
-                defaultValue="Experience the quality and reliability of our partner brands."
-                as="span"
-                multiline
-              />
-            </p>
-            {isAdminMode && (
-              <div className="mt-4">
-                <Button onClick={() => setShowAddBrandDialog(true)} size="sm" className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  Add Brand
-                </Button>
-              </div>
-            )}
-          </div>
-          <div className="grid gap-8 md:grid-cols-2">
-            {allBrands.map((brand, index) => (
-              <Card
-                key={brand.id}
-                className="group relative transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-2 animate-fade-in-up cursor-pointer"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                {isAdminMode && (
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-2 right-2 z-10 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => handleDeleteBrand(brand.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
-                <CardContent className="flex flex-col items-center p-8 text-center">
-                  <img
-                    src={brand.logo || "/placeholder.svg"}
-                    alt={brand.name}
-                    className="mb-4 h-16 transition-transform duration-300 group-hover:scale-110"
-                  />
-                  <h3 className="mb-2 text-2xl font-semibold transition-colors duration-300 group-hover:text-primary">
-                    <EditableText contentKey={`brand.${brand.id}.name`} defaultValue={brand.name} as="span" />
-                  </h3>
-                  <p className="text-muted-foreground">
-                    <EditableText
-                      contentKey={`brand.${brand.id}.description`}
-                      defaultValue={brand.description}
-                      as="span"
-                      multiline
-                    />
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Hearing Categories Carousel */}
+      <HearingCategoriesCarousel />
 
       <footer className="border-t bg-background py-12">
         <div className="container mx-auto max-w-7xl px-4">
@@ -555,6 +461,7 @@ export default function HomePage() {
         </div>
       </footer>
 
+      {/* Dialog for Adding Brand */}
       <Dialog open={showAddBrandDialog} onOpenChange={setShowAddBrandDialog}>
         <DialogContent>
           <DialogHeader>
@@ -598,6 +505,6 @@ export default function HomePage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </main>
   )
 }

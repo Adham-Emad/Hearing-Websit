@@ -8,6 +8,7 @@ import { ArrowLeft, Check, Phone, Calendar } from "lucide-react"
 import { products, brands } from "@/lib/hearing-data"
 import { getStoredProducts } from "@/lib/content-store"
 import { notFound } from "next/navigation"
+import { ProductImageViewer } from "@/components/product-image-viewer"
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
   const storedProducts = getStoredProducts()
@@ -35,7 +36,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Product Image */}
           <div className="overflow-hidden rounded-lg">
-            <img src={product.image || "/placeholder.svg"} alt={product.name} className="h-full w-full object-cover" />
+            <ProductImageViewer src={product.image || "/placeholder.svg"} alt={product.name} />
           </div>
 
           {/* Product Details */}
