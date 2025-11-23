@@ -1,47 +1,49 @@
-import { NextResponse } from "next/server"
-import { Resend } from "resend"
+export const dynamic = "force-dynamic"; // prevents Next.js from running at build
 
-// Initialize Resend with API key from environment variables
-const resend = new Resend(process.env.RESEND_API_KEY)
+import { NextResponse } from "next/server";
+import { Resend } from "resend";
 
 export async function POST(request: Request) {
   try {
-    const { name, email, message } = await request.json()
+    const { name, email, message } = await request.json();
 
     // Validate required fields
     if (!name || !email || !message) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     // Check if API key is configured
     if (!process.env.RESEND_API_KEY) {
-      console.error("[v0] RESEND_API_KEY is not configured")
+      console.error("[v0] RESEND_API_KEY is not configured");
       return NextResponse.json(
         {
           error: "Email service not configured. Please add RESEND_API_KEY to environment variables.",
           setupRequired: true,
         },
-        { status: 500 },
-      )
+        { status: 500 }
+      );
     }
 
-    const recipientEmail = process.env.RESEND_RECIPIENT_EMAIL
+    const recipientEmail = process.env.RESEND_RECIPIENT_EMAIL;
     if (!recipientEmail) {
-      console.error("[v0] RESEND_RECIPIENT_EMAIL is not configured")
+      console.error("[v0] RESEND_RECIPIENT_EMAIL is not configured");
       return NextResponse.json(
         {
           error: "Email recipient not configured. Please add RESEND_RECIPIENT_EMAIL to environment variables.",
           setupRequired: true,
         },
-        { status: 500 },
-      )
+        { status: 500 }
+      );
     }
+
+    // Initialize Resend inside handler
+    const resend = new Resend(process.env.RESEND_API_KEY);
 
     // Send email using Resend
     const data = await resend.emails.send({
-      from: "HearClear Contact <onboarding@resend.dev>", // Resend verified sender
-      to: [recipientEmail], // Use environment variable instead of hardcoded email
-      replyTo: email, // Customer's email for easy reply
+      from: "HearClear Contact <onboarding@resend.dev>",
+      to: [recipientEmail],
+      replyTo: email,
       subject: `New Contact Form Message from ${name}`,
       html: `
         <!DOCTYPE html>
@@ -86,23 +88,23 @@ export async function POST(request: Request) {
           </body>
         </html>
       `,
-    })
+    });
 
-    console.log("[v0] Email sent successfully:", data)
+    console.log("[v0] Email sent successfully:", data);
 
     return NextResponse.json({
       success: true,
       message: "Email sent successfully",
       id: data.id,
-    })
+    });
   } catch (error: any) {
-    console.error("[v0] Error sending email:", error)
+    console.error("[v0] Error sending email:", error);
     return NextResponse.json(
       {
         error: "Failed to send email",
         details: error.message,
       },
-      { status: 500 },
-    )
+      { status: 500 }
+    );
   }
 }
