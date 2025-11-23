@@ -1,6 +1,3 @@
-// ADDED to force dynamic rendering for this dynamic route
-export const dynamic = "force-dynamic";
-
 import { MainNavigation } from "@/components/main-navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -9,6 +6,9 @@ import Link from "next/link"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 import { products, productCategories, brands } from "@/lib/hearing-data"
 import { notFound } from "next/navigation"
+
+// FIX: Force dynamic rendering to prevent SSR issues related to data or environment
+export const dynamic = "force-dynamic"
 
 export default function CategoryPage({ params }: { params: { id: string } }) {
   const category = productCategories.find((c) => c.id === params.id)
@@ -90,22 +90,17 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
       <section className="border-t bg-muted/50 py-12 md:py-16">
         <div className="container">
           <Card className="bg-gradient-to-r from-primary to-secondary">
-            <CardContent className="p-8 text-center text-primary-foreground md:p-12">
-              <h2 className="mb-4 text-3xl font-bold">Need Help Choosing?</h2>
-              <p className="mb-6 text-lg opacity-90">
-                Our expert audiologists are here to help you find the perfect hearing solution.
+            <CardContent className="p-8 text-center text-white">
+              <h2 className="mb-4 text-3xl font-bold">Ready to Experience Better Hearing?</h2>
+              <p className="mb-6 text-lg">
+                Book a free consultation with our expert audiologists today.
               </p>
-              <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
-                <Button asChild size="lg" variant="secondary">
-                  <Link href="/booking">Book Free Consultation</Link>
+              <div className="flex flex-col justify-center gap-4 sm:flex-row">
+                <Button asChild size="lg" variant="secondary" className="bg-white text-primary hover:bg-white/90">
+                  <Link href="/booking">Book Consultation</Link>
                 </Button>
-                <Button
-                  asChild
-                  size="lg"
-                  variant="outline"
-                  className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary bg-transparent"
-                >
-                  <Link href="/contact">Contact Us</Link>
+                <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+                  <Link href="/contact">Contact Our Centers</Link>
                 </Button>
               </div>
             </CardContent>
@@ -113,25 +108,24 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t bg-background py-12">
-        <div className="container">
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+      <footer className="border-t bg-white py-12">
+        <div className="container mx-auto max-w-7xl px-4">
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
             <div>
-              <h3 className="mb-4 text-lg font-semibold">Al-Barakat Hearing Care</h3>
-              <p className="text-sm text-muted-foreground">Your trusted partner in hearing health and wellness.</p>
+              <h4 className="mb-4 text-xl font-bold">Al-Barakat</h4>
+              <p className="text-sm text-muted-foreground">Advanced Hearing Solutions</p>
             </div>
             <div>
               <h4 className="mb-4 text-sm font-semibold">Quick Links</h4>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link href="/about" className="text-muted-foreground hover:text-foreground">
-                    About Us
+                  <Link href="/" className="text-muted-foreground hover:text-foreground">
+                    Home
                   </Link>
                 </li>
                 <li>
-                  <Link href="/services" className="text-muted-foreground hover:text-foreground">
-                    Services
+                  <Link href="/about" className="text-muted-foreground hover:text-foreground">
+                    About Us
                   </Link>
                 </li>
                 <li>

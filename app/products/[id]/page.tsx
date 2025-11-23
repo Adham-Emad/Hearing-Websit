@@ -1,6 +1,3 @@
-// ADDED to force dynamic rendering for this dynamic route
-export const dynamic = "force-dynamic";
-
 import { MainNavigation } from "@/components/main-navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -12,6 +9,9 @@ import { products, brands } from "@/lib/hearing-data"
 import { getStoredProducts } from "@/lib/content-store"
 import { notFound } from "next/navigation"
 import { ProductImageViewer } from "@/components/product-image-viewer"
+
+// FIX: Force dynamic rendering to prevent SSR issues related to data or environment
+export const dynamic = "force-dynamic"
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
   const storedProducts = getStoredProducts()
@@ -125,55 +125,26 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
             )}
           </div>
         </div>
-
-        {/* Additional Info */}
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="mb-2 font-semibold">Free Consultation</h3>
-              <p className="text-sm text-muted-foreground">
-                Book a free consultation with our expert audiologists to try this device.
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="mb-2 font-semibold">Warranty & Support</h3>
-              <p className="text-sm text-muted-foreground">
-                All devices come with manufacturer warranty and lifetime support from our team.
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="mb-2 font-semibold">Flexible Payment</h3>
-              <p className="text-sm text-muted-foreground">
-                We work with insurance providers and offer flexible payment options.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
       </div>
 
-      {/* Footer */}
-      <footer className="mt-12 border-t bg-background py-12">
+      <footer className="border-t bg-muted/50 py-12">
         <div className="container mx-auto max-w-7xl px-4">
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
             <div>
-              <h3 className="mb-4 text-lg font-semibold">Al-Barakat Hearing Care</h3>
-              <p className="text-sm text-muted-foreground">Your trusted partner in hearing health and wellness.</p>
+              <h4 className="mb-4 text-xl font-bold">Al-Barakat</h4>
+              <p className="text-sm text-muted-foreground">Advanced Hearing Solutions</p>
             </div>
             <div>
               <h4 className="mb-4 text-sm font-semibold">Quick Links</h4>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link href="/about" className="text-muted-foreground hover:text-foreground">
-                    About Us
+                  <Link href="/" className="text-muted-foreground hover:text-foreground">
+                    Home
                   </Link>
                 </li>
                 <li>
-                  <Link href="/services" className="text-muted-foreground hover:text-foreground">
-                    Services
+                  <Link href="/about" className="text-muted-foreground hover:text-foreground">
+                    About Us
                   </Link>
                 </li>
                 <li>
