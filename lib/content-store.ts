@@ -1,5 +1,3 @@
-"use client"
-
 // Content management store using localStorage
 // In production, this should be a proper database
 
