@@ -1,3 +1,6 @@
+// ADDED to force dynamic rendering for this dynamic route
+export const dynamic = "force-dynamic";
+
 import { MainNavigation } from "@/components/main-navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
