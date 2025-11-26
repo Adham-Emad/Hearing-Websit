@@ -69,14 +69,14 @@ export const theoreticalQuestions: TheoreticalQuestion[] = [
 ]
 
 // Standard audiometric frequencies (Hz) used in medical hearing tests
-export const testFrequencies = [50, 250, 500, 1000, 2000, 4000, 8000]
+export const testFrequencies = [250, 500, 1000, 2000, 4000, 8000]
 
 export function calculateHearingPercentages(results: { frequency: number; threshold: number }[]): number {
-  // Convert thresholds to hearing ability percentage
-  // Higher threshold (closer to 1) = better hearing = higher percentage
+  // If threshold is low (0.1), it means user could hear at low volume = good hearing = 90% (1 - 0.1 = 0.9)
+  // If threshold is high (0.9), it means user needed high volume = poor hearing = 10% (1 - 0.9 = 0.1)
   const avgThreshold = results.reduce((sum, r) => sum + r.threshold, 0) / results.length
-  // Convert to percentage (0-100%)
-  return Math.round(avgThreshold * 100)
+  // Invert: (1 - threshold) gives correct hearing ability percentage
+  return Math.round((1 - avgThreshold) * 100)
 }
 
 export function calculateOverallPercentage(
@@ -86,6 +86,14 @@ export function calculateOverallPercentage(
   const leftPercentage = calculateHearingPercentages(leftEarResults)
   const rightPercentage = calculateHearingPercentages(rightEarResults)
   return Math.round((leftPercentage + rightPercentage) / 2)
+}
+
+export function getHearingCategory(percentage: number): string {
+  if (percentage >= 90) return "Good Hearing"
+  if (percentage >= 70) return "Mild Loss"
+  if (percentage >= 50) return "Moderate Loss"
+  if (percentage >= 20) return "Severe Loss"
+  return "Significant Loss"
 }
 
 export function calculateTheoreticalScore(answers: number[]): number {
@@ -110,40 +118,46 @@ export function calculateOverallAssessment(
   leftEarResults: { frequency: number; threshold: number }[],
   rightEarResults: { frequency: number; threshold: number }[],
 ): HearingTestResult["overallAssessment"] {
-  // Calculate average hearing threshold across all frequencies
   const allThresholds = [...leftEarResults, ...rightEarResults].map((r) => r.threshold)
   const avgThreshold = allThresholds.reduce((a, b) => a + b, 0) / allThresholds.length
 
-  // Medical classification based on Pure Tone Average (PTA)
-  // Normal: 0-25 dB, Mild: 26-40 dB, Moderate: 41-70 dB, Severe: 71+ dB
-  // We're using volume (0-1) so we need to convert: lower volume = higher dB loss
-  const estimatedDBLoss = avgThreshold * 80 // Now correctly maps: high threshold = high loss
+  // Convert: lower threshold (0.1) = better hearing, higher threshold (0.9) = worse hearing
+  // Medical scale: 0-25dB = normal, 26-40dB = mild loss, 41-70dB = moderate loss, 71+dB = severe loss
+  const estimatedDBLoss = (1 - avgThreshold) * 80 // Inverted: low avgThreshold = high loss, high avgThreshold = low loss
 
   const theoreticalFactor = theoreticalScore / 100
 
-  if (estimatedDBLoss < 15 && theoreticalFactor < 0.3) {
-    return "normal"
-  } else if (estimatedDBLoss < 30 || theoreticalFactor < 0.5) {
-    return "mild-loss"
-  } else if (estimatedDBLoss < 55 || theoreticalFactor < 0.7) {
-    return "moderate-loss"
-  } else {
+  if (estimatedDBLoss > 70 || theoreticalFactor > 0.8) {
     return "severe-loss"
+  } else if (estimatedDBLoss > 45 || theoreticalFactor > 0.65) {
+    return "moderate-loss"
+  } else if (estimatedDBLoss > 20 || theoreticalFactor > 0.35) {
+    return "mild-loss"
+  } else {
+    return "normal"
   }
 }
 
-export function generateRecommendations(assessment: HearingTestResult["overallAssessment"]): string[] {
+export function generateRecommendations(
+  assessment: HearingTestResult["overallAssessment"],
+  percentage?: number,
+): string[] {
+  const firstRecommendation =
+    percentage !== undefined
+      ? `Your results show ${getHearingCategory(percentage)} (${percentage}%).`
+      : "Your results suggest mild hearing loss in certain frequencies."
+
   switch (assessment) {
     case "normal":
       return [
-        "Your hearing appears to be within normal range.",
+        firstRecommendation,
         "Continue to protect your hearing from loud noises and use hearing protection when necessary.",
         "Schedule regular hearing check-ups every 2-3 years to monitor your hearing health.",
         "Maintain a healthy lifestyle with proper nutrition and exercise to support overall ear health.",
       ]
     case "mild-loss":
       return [
-        "Your results suggest mild hearing loss in certain frequencies.",
+        firstRecommendation,
         "We recommend scheduling a comprehensive audiological evaluation with our certified audiologists.",
         "Early intervention can prevent further hearing deterioration and improve quality of life.",
         "Consider using hearing protection in noisy environments to prevent additional damage.",
@@ -151,7 +165,7 @@ export function generateRecommendations(assessment: HearingTestResult["overallAs
       ]
     case "moderate-loss":
       return [
-        "Your results indicate moderate hearing loss that may be affecting your daily communication.",
+        firstRecommendation,
         "We strongly recommend scheduling an appointment with our audiologists for a complete evaluation.",
         "Hearing aids are highly recommended and can dramatically improve your quality of life.",
         "Our audiologists can help you find the perfect hearing solution tailored to your lifestyle.",
@@ -159,7 +173,7 @@ export function generateRecommendations(assessment: HearingTestResult["overallAs
       ]
     case "severe-loss":
       return [
-        "Your results suggest significant hearing challenges that require immediate professional attention.",
+        firstRecommendation,
         "Please schedule an appointment with our audiologists as soon as possible for a comprehensive evaluation.",
         "Advanced hearing aid technology or cochlear implants may be appropriate solutions for you.",
         "Untreated hearing loss can lead to social isolation and cognitive decline - early treatment is crucial.",

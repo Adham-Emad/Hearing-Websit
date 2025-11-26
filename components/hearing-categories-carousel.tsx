@@ -48,7 +48,7 @@ const categories: Category[] = [
     description:
       "Experience nearly invisible hearing aids with our slim design collection. Enjoy powerful performance without the visible bulk, perfect for those seeking discretion.",
     image: "/images/ph-packshot-slim-l-r-050-0851-6-a-1920x1920.avif",
-    href: "/products/category/slim",
+    href: "/products/category/styletto",
   },
   {
     id: "custom-fit",
@@ -56,23 +56,23 @@ const categories: Category[] = [
     description:
       "Our custom-fit hearing aids are molded specifically to your ear for optimal comfort and performance. Personalized hearing care at its best.",
     image: "/images/cq5dam.jpeg",
-    href: "/products/category/custom",
+    href: "/products/category/insio",
   },
   {
     id: "rechargeables",
-    title: "Rechargeable Hearing Aids",
+    title: "Motion Sensors",
     description:
-      "Say goodbye to battery changes. Our rechargeable hearing aids provide all-day power with convenient charging solutions for modern lifestyles.",
+      "Advanced motion sensors provide enhanced hearing experience. Enjoy seamless performance with intelligent motion-responsive technology.",
     image: "/images/ph-packshot-charger-combi-bte-with-sky-m-pr-075-0062.avif",
-    href: "/products/category/rechargeable",
+    href: "/products/category/motion",
   },
   {
     id: "wireless",
-    title: "Wireless Connectivity",
+    title: "Pure RIC Hearing Aids",
     description:
-      "Stream directly from your smartphone, TV, and other devices. Experience seamless wireless connectivity with our latest hearing aid technology.",
+      "Receiver-In-Canal hearing aids with natural sound quality. Experience clear, balanced hearing with our most popular RIC design.",
     image: "/images/rs-rt-custom-line-up-scaled.jpg",
-    href: "/products",
+    href: "/products/category/pure-ric",
   },
   {
     id: "support",

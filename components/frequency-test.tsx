@@ -8,6 +8,7 @@ import { Slider } from "@/components/ui/slider"
 import { Volume2, Minus, Plus } from "lucide-react"
 import { AudiometryToneGenerator } from "@/lib/audio-generator"
 import { testFrequencies } from "@/lib/hearing-test-data"
+import { dbToGain, AUDIOMETRY_STARTING_DB } from "@/lib/audio-constants"
 
 interface FrequencyTestProps {
   ear: "left" | "right"
@@ -16,7 +17,7 @@ interface FrequencyTestProps {
 
 export function FrequencyTest({ ear, onComplete }: FrequencyTestProps) {
   const [currentFrequencyIndex, setCurrentFrequencyIndex] = useState(0)
-  const [volume, setVolume] = useState(0.5)
+  const [volume, setVolume] = useState(dbToGain(AUDIOMETRY_STARTING_DB)) // Initialize volume at 50dB (converted to gain) instead of 0.1
   const [isPlaying, setIsPlaying] = useState(false)
   const [results, setResults] = useState<{ frequency: number; threshold: number }[]>([])
   const toneGeneratorRef = useRef<AudiometryToneGenerator | null>(null)
@@ -61,7 +62,7 @@ export function FrequencyTest({ ear, onComplete }: FrequencyTestProps) {
   }
 
   const handleVolumeDown = () => {
-    const newVolume = Math.max(0.05, volume - 0.05)
+    const newVolume = Math.max(dbToGain(0), volume - dbToGain(5))
     setVolume(newVolume)
     if (toneGeneratorRef.current && isPlaying) {
       toneGeneratorRef.current.setVolume(newVolume)
@@ -69,7 +70,7 @@ export function FrequencyTest({ ear, onComplete }: FrequencyTestProps) {
   }
 
   const handleVolumeUp = () => {
-    const newVolume = Math.min(1.0, volume + 0.05)
+    const newVolume = Math.min(dbToGain(100), volume + dbToGain(5))
     setVolume(newVolume)
     if (toneGeneratorRef.current && isPlaying) {
       toneGeneratorRef.current.setVolume(newVolume)
@@ -87,7 +88,8 @@ export function FrequencyTest({ ear, onComplete }: FrequencyTestProps) {
 
     if (currentFrequencyIndex < testFrequencies.length - 1) {
       setCurrentFrequencyIndex(currentFrequencyIndex + 1)
-      setVolume(0.5) // Reset volume for next frequency
+      // Reset volume to 50dB for next frequency
+      setVolume(dbToGain(AUDIOMETRY_STARTING_DB))
     } else {
       onComplete(newResults)
     }
@@ -148,9 +150,9 @@ export function FrequencyTest({ ear, onComplete }: FrequencyTestProps) {
               <Slider
                 value={[volume]}
                 onValueChange={handleVolumeChange}
-                max={1}
-                min={0.05}
-                step={0.05}
+                max={dbToGain(100)}
+                min={dbToGain(0)}
+                step={dbToGain(5)}
                 className="w-64"
               />
               <Volume2 className="h-8 w-8 text-primary" />

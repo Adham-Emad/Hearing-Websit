@@ -6,23 +6,31 @@ import { EquipmentSetup } from "@/components/equipment-setup"
 import { TheoreticalQuestions } from "@/components/theoretical-questions"
 import { FrequencyTest } from "@/components/frequency-test"
 import { HearingTestResultsNew } from "@/components/hearing-test-results-new"
+import { CustomerDataModal, type CustomerData } from "@/components/customer-data-modal"
 import {
   calculateTheoreticalScore,
   calculateOverallAssessment,
   generateRecommendations,
   generateHearingTips,
   type HearingTestResult,
+  calculateOverallPercentage,
 } from "@/lib/hearing-test-data"
 
-type TestStage = "equipment" | "theoretical" | "left-ear" | "right-ear" | "results"
+type TestStage = "customer-data" | "equipment" | "theoretical" | "left-ear" | "right-ear" | "results"
 
 export default function HearingTestPage() {
-  const [stage, setStage] = useState<TestStage>("equipment")
+  const [stage, setStage] = useState<TestStage>("customer-data")
+  const [customerData, setCustomerData] = useState<CustomerData | null>(null)
   const [equipmentData, setEquipmentData] = useState<any>(null)
   const [theoreticalAnswers, setTheoreticalAnswers] = useState<number[]>([])
   const [leftEarResults, setLeftEarResults] = useState<{ frequency: number; threshold: number }[]>([])
   const [rightEarResults, setRightEarResults] = useState<{ frequency: number; threshold: number }[]>([])
   const [finalResults, setFinalResults] = useState<HearingTestResult | null>(null)
+
+  const handleCustomerDataComplete = (data: CustomerData) => {
+    setCustomerData(data)
+    setStage("equipment")
+  }
 
   const handleEquipmentComplete = (equipment: any) => {
     setEquipmentData(equipment)
@@ -45,7 +53,8 @@ export default function HearingTestPage() {
     // Calculate final results
     const theoreticalScore = calculateTheoreticalScore(theoreticalAnswers)
     const assessment = calculateOverallAssessment(theoreticalScore, results, leftEarResults)
-    const recommendations = generateRecommendations(assessment)
+    const overallPercentage = calculateOverallPercentage(leftEarResults, results)
+    const recommendations = generateRecommendations(assessment, overallPercentage)
     const hearingTips = generateHearingTips()
 
     const testResults: HearingTestResult = {
@@ -62,7 +71,8 @@ export default function HearingTestPage() {
   }
 
   const handleRetake = () => {
-    setStage("equipment")
+    setStage("customer-data")
+    setCustomerData(null)
     setEquipmentData(null)
     setTheoreticalAnswers([])
     setLeftEarResults([])
@@ -74,6 +84,8 @@ export default function HearingTestPage() {
     <div className="min-h-screen">
       <MainNavigation />
 
+      <CustomerDataModal open={stage === "customer-data"} onComplete={handleCustomerDataComplete} />
+
       <div className="container mx-auto max-w-7xl px-4 py-12">
         {stage === "equipment" && <EquipmentSetup onComplete={handleEquipmentComplete} />}
 
@@ -83,7 +95,15 @@ export default function HearingTestPage() {
 
         {stage === "right-ear" && <FrequencyTest ear="right" onComplete={handleRightEarComplete} />}
 
-        {stage === "results" && finalResults && <HearingTestResultsNew result={finalResults} onRetake={handleRetake} />}
+        {stage === "results" && finalResults && (
+          <HearingTestResultsNew
+            result={finalResults}
+            onRetake={handleRetake}
+            customerData={customerData}
+            leftEarResults={leftEarResults}
+            rightEarResults={rightEarResults}
+          />
+        )}
       </div>
 
       {/* Footer */}

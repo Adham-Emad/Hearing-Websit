@@ -28,14 +28,7 @@ export class AudiometryToneGenerator {
     this.oscillator.type = "sine" // Pure sine wave for audiometry
     this.oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime)
 
-    let adjustedVolume = volume
-    if (frequency < 50) {
-      adjustedVolume = Math.min(1, volume * 4.0) // Very significant boost for very low frequencies
-    } else if (frequency < 100) {
-      adjustedVolume = Math.min(1, volume * 3.0) // Significant boost for 50 Hz
-    } else if (frequency <= 250) {
-      adjustedVolume = Math.min(1, volume * 2.0) // Medium boost for low frequencies
-    }
+    const adjustedVolume = Math.max(0.001, volume)
 
     // Set volume
     this.gainNode.gain.setValueAtTime(adjustedVolume, this.audioContext.currentTime)
@@ -81,14 +74,7 @@ export class AudiometryToneGenerator {
     this.oscillator.type = "sine" // Pure sine wave for audiometry
     this.oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime)
 
-    let adjustedVolume = volume
-    if (frequency < 50) {
-      adjustedVolume = Math.min(1, volume * 4.0) // Very significant boost for very low frequencies
-    } else if (frequency < 100) {
-      adjustedVolume = Math.min(1, volume * 3.0) // Significant boost for 50 Hz
-    } else if (frequency <= 250) {
-      adjustedVolume = Math.min(1, volume * 2.0) // Medium boost for low frequencies
-    }
+    const adjustedVolume = Math.max(0.001, volume)
 
     // Set volume
     this.gainNode.gain.setValueAtTime(adjustedVolume, this.audioContext.currentTime)
@@ -147,17 +133,9 @@ export class AudiometryToneGenerator {
     this.currentVolume = Math.max(0, Math.min(1, volume))
     if (this.gainNode && this.audioContext) {
       const currentTime = this.audioContext.currentTime
-      let adjustedVolume = this.currentVolume
-      if (this.currentFrequency < 50) {
-        adjustedVolume = Math.min(1, this.currentVolume * 4.0) // Very significant boost for very low frequencies
-      } else if (this.currentFrequency < 100) {
-        adjustedVolume = Math.min(1, this.currentVolume * 3.0) // Significant boost for 50 Hz
-      } else if (this.currentFrequency <= 250) {
-        adjustedVolume = Math.min(1, this.currentVolume * 2.0) // Medium boost for low frequencies
-      }
-      // Ensure we never set volume to exactly 0 (causes issues with exponential ramp)
-      const targetVolume = Math.max(0.001, adjustedVolume)
-      this.gainNode.gain.exponentialRampToValueAtTime(targetVolume, currentTime + 0.05)
+      const adjustedVolume = Math.max(0.001, this.currentVolume)
+      this.gainNode.gain.setTargetAtTime(adjustedVolume, currentTime, 0.01)
+      console.log(`[v0] Volume updated to: ${adjustedVolume} for frequency: ${this.currentFrequency}Hz`)
     }
   }
 

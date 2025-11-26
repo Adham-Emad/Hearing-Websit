@@ -5,13 +5,99 @@ import { Button } from "@/components/ui/button"
 import { Calendar, CheckCircle2, AlertCircle, TrendingDown, TrendingUp } from "lucide-react"
 import Link from "next/link"
 import type { HearingTestResult } from "@/lib/hearing-test-data"
+import { calculateOverallPercentage, getHearingCategory } from "@/lib/hearing-test-data"
+import { useState, useEffect } from "react"
 
 interface HearingTestResultsNewProps {
   result: HearingTestResult
   onRetake: () => void
+  customerData?: any
+  leftEarResults?: { frequency: number; threshold: number }[]
+  rightEarResults?: { frequency: number; threshold: number }[]
 }
 
-export function HearingTestResultsNew({ result, onRetake }: HearingTestResultsNewProps) {
+export function HearingTestResultsNew({
+  result,
+  onRetake,
+  customerData,
+  leftEarResults = [],
+  rightEarResults = [],
+}: HearingTestResultsNewProps) {
+  const [isSendingEmail, setIsSendingEmail] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
+  const [emailError, setEmailError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const sendEmailAutomatically = async () => {
+      if (!customerData || emailSent) return
+
+      setIsSendingEmail(true)
+      try {
+        console.log("[v0] Automatically sending test results email...")
+        const response = await fetch("/api/send-hearing-test-results", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            customerData,
+            testResults: result,
+            leftEarResults: leftEarResults || result.leftEarResults,
+            rightEarResults: rightEarResults || result.rightEarResults,
+          }),
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.details || data.error || "Failed to send results")
+        }
+
+        setEmailSent(true)
+        console.log("[v0] Test results sent to email successfully:", data)
+      } catch (error: any) {
+        console.error("[v0] Error sending results:", error)
+        setEmailError(error.message)
+      } finally {
+        setIsSendingEmail(false)
+      }
+    }
+
+    sendEmailAutomatically()
+  }, [customerData, emailSent, result, leftEarResults, rightEarResults])
+
+  const handleSendResults = async () => {
+    if (!customerData) {
+      alert("Customer data not found. Please retake the test.")
+      return
+    }
+
+    setIsSendingEmail(true)
+    try {
+      const response = await fetch("/api/send-hearing-test-results", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerData,
+          testResults: result,
+          leftEarResults: leftEarResults || result.leftEarResults,
+          rightEarResults: rightEarResults || result.rightEarResults,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.details || "Failed to send results")
+      }
+
+      setEmailSent(true)
+      console.log("[v0] Test results sent to email successfully")
+    } catch (error: any) {
+      console.error("[v0] Error sending results:", error)
+      alert(`Error sending results: ${error.message}`)
+    } finally {
+      setIsSendingEmail(false)
+    }
+  }
+
   const getAssessmentInfo = () => {
     switch (result.overallAssessment) {
       case "normal":
@@ -56,11 +142,13 @@ export function HearingTestResultsNew({ result, onRetake }: HearingTestResultsNe
   const leftEarAvg = result.leftEarResults.reduce((sum, r) => sum + r.threshold, 0) / result.leftEarResults.length
   const rightEarAvg = result.rightEarResults.reduce((sum, r) => sum + r.threshold, 0) / result.rightEarResults.length
 
+  const overallPercentage = calculateOverallPercentage(result.leftEarResults, result.rightEarResults)
+  const hearingCategory = getHearingCategory(overallPercentage)
+
   const getHearingLevel = (threshold: number) => {
-    const invertedThreshold = 1 - threshold
-    if (invertedThreshold > 0.75) return "Good"
-    if (invertedThreshold > 0.6) return "Fair"
-    if (invertedThreshold > 0.4) return "Loss"
+    if (threshold < 0.25) return "Good"
+    if (threshold < 0.4) return "Fair"
+    if (threshold < 0.6) return "Loss"
     return "Significant Loss"
   }
 
@@ -68,7 +156,10 @@ export function HearingTestResultsNew({ result, onRetake }: HearingTestResultsNe
     <div className="mx-auto max-w-5xl">
       <div className="mb-8 text-center">
         <div className="mb-4 text-sm font-semibold text-muted-foreground uppercase tracking-wide">RESULTS</div>
-        <h1 className="text-4xl font-bold mb-4">{assessmentInfo.title}</h1>
+        <h1 className="text-4xl font-bold mb-2">{assessmentInfo.title}</h1>
+        <p className="text-2xl font-semibold text-primary mb-4">
+          {hearingCategory} - {overallPercentage}%
+        </p>
         <p className="text-muted-foreground">
           Test completed on{" "}
           {new Date().toLocaleDateString("en-US", {
@@ -77,6 +168,33 @@ export function HearingTestResultsNew({ result, onRetake }: HearingTestResultsNe
             day: "numeric",
           })}
         </p>
+
+        {emailError && (
+          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-700 font-semibold">⚠️ Email Error: {emailError}</p>
+            <p className="text-red-600 text-sm mt-2">
+              Please ensure RESEND_API_KEY is configured in environment variables.
+            </p>
+          </div>
+        )}
+
+        {isSendingEmail && (
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-blue-700 font-semibold">📧 Sending test results to adhamemad.weschool@gmail.com...</p>
+          </div>
+        )}
+
+        {emailSent && !emailError && (
+          <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-green-700 font-semibold">
+              ✓ Test results sent successfully to adhamemad.weschool@gmail.com
+            </p>
+            <p className="text-green-600 text-sm mt-1">
+              Customer contact info included: {customerData?.name} ({customerData?.email})
+            </p>
+          </div>
+        )}
+
         <Button
           asChild
           variant="outline"
