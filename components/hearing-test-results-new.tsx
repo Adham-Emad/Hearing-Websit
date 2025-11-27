@@ -8,6 +8,8 @@ import type { HearingTestResult } from "@/lib/hearing-test-data"
 import { calculateOverallPercentage, getHearingCategory } from "@/lib/hearing-test-data"
 import { useState, useEffect } from "react"
 
+// ... (Interface and component function start are unchanged)
+
 interface HearingTestResultsNewProps {
   result: HearingTestResult
   onRetake: () => void
@@ -33,7 +35,7 @@ export function HearingTestResultsNew({
   
   // Map the calculated percentage to the severity assessment for the title
   const getAssessmentSeverity = (percentage: number): "normal" | "mild-loss" | "moderate-loss" | "severe-loss" => {
-    if (percentage >= 90) return "normal" // 97% falls here
+    if (percentage >= 90) return "normal" // Assumes 90-100% is 'normal capacity'
     if (percentage >= 75) return "mild-loss"
     if (percentage >= 50) return "moderate-loss"
     return "severe-loss"
@@ -41,6 +43,8 @@ export function HearingTestResultsNew({
 
   // Use the calculated severity to determine the display info
   const currentSeverity = getAssessmentSeverity(overallPercentage)
+
+  // ... (useEffect for email sending is unchanged)
 
   useEffect(() => {
     const sendEmailAutomatically = async () => {
@@ -167,6 +171,14 @@ export function HearingTestResultsNew({
     if (threshold < 0.6) return "Loss"
     return "Significant Loss"
   }
+  
+  // --- ADDED: Helper function to safely calculate percentage for display ---
+  const getSafePercentage = (threshold: number) => {
+    // Assumes 1 is max loss (0% capacity) and 0 is no loss (100% capacity).
+    // Clamps the value to be between 0 and 1 before inversion (1 - threshold) to prevent negative results.
+    const clampedThreshold = Math.max(0, Math.min(1, threshold));
+    return Math.round((1 - clampedThreshold) * 100);
+  }
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -189,8 +201,8 @@ export function HearingTestResultsNew({
           <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-red-700 font-semibold">⚠️ Email Error: {emailError}</p>
             <p className="text-red-600 text-sm mt-2">
-              {/* --- EDITED: Updated the environment variable message --- */}
-              Please ensure GMAIL_USER, GMAIL_APP_PASSWORD, and CONTACT_RECIPIENT_EMAIL are configured in environment variables.
+              {/* --- CORRECTED MESSAGE FROM PREVIOUS STEP --- */}
+              Please ensure **GMAIL_USER**, **GMAIL_APP_PASSWORD**, and **CONTACT_RECIPIENT_EMAIL** are configured in environment variables.
             </p>
           </div>
         )}
@@ -241,7 +253,8 @@ export function HearingTestResultsNew({
                 <span>Good</span>
               </div>
               <div className="relative h-12 rounded-full overflow-hidden bg-gradient-to-r from-red-500 via-amber-500 to-green-500">
-                <div className="absolute top-0 bottom-0 w-1 bg-black" style={{ left: `${(1 - leftEarAvg) * 100}%` }}>
+                {/* --- EDITED: Used getSafePercentage for visualization positioning --- */}
+                <div className="absolute top-0 bottom-0 w-1 bg-black" style={{ left: `${getSafePercentage(leftEarAvg)}%` }}>
                   <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-2xl">↓</div>
                   <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs font-semibold whitespace-nowrap">
                     Your hearing ability
@@ -259,10 +272,12 @@ export function HearingTestResultsNew({
                     <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-primary rounded-full"
-                        style={{ width: `${(1 - r.threshold) * 100}%` }}
+                        // --- EDITED: Used getSafePercentage for bar width ---
+                        style={{ width: `${getSafePercentage(r.threshold)}%` }}
                       />
                     </div>
-                    <span className="text-xs font-medium w-12">{Math.round((1 - r.threshold) * 100)}%</span>
+                    {/* --- EDITED: Used getSafePercentage for percentage text --- */}
+                    <span className="text-xs font-medium w-12">{getSafePercentage(r.threshold)}%</span>
                   </div>
                 </div>
               ))}
@@ -286,7 +301,8 @@ export function HearingTestResultsNew({
                 <span>Good</span>
               </div>
               <div className="relative h-12 rounded-full overflow-hidden bg-gradient-to-r from-red-500 via-amber-500 to-green-500">
-                <div className="absolute top-0 bottom-0 w-1 bg-black" style={{ left: `${(1 - rightEarAvg) * 100}%` }}>
+                {/* --- EDITED: Used getSafePercentage for visualization positioning --- */}
+                <div className="absolute top-0 bottom-0 w-1 bg-black" style={{ left: `${getSafePercentage(rightEarAvg)}%` }}>
                   <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-2xl">↓</div>
                   <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs font-semibold whitespace-nowrap">
                     Your hearing ability
@@ -304,10 +320,12 @@ export function HearingTestResultsNew({
                     <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-primary rounded-full"
-                        style={{ width: `${(1 - r.threshold) * 100}%` }}
+                         // --- EDITED: Used getSafePercentage for bar width ---
+                        style={{ width: `${getSafePercentage(r.threshold)}%` }}
                       />
                     </div>
-                    <span className="text-xs font-medium w-12">{Math.round((1 - r.threshold) * 100)}%</span>
+                    {/* --- EDITED: Used getSafePercentage for percentage text --- */}
+                    <span className="text-xs font-medium w-12">{getSafePercentage(r.threshold)}%</span>
                   </div>
                 </div>
               ))}
