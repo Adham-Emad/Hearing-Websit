@@ -1,11 +1,24 @@
 [build]
+  # Next.js default build command
   command = "npm run build"
+  # Next.js default output directory (where the plugin looks)
   publish = ".next"
 
 [functions]
+  # Keeps your functions build process fast and efficient
   node_bundler = "esbuild"
 
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# THIS IS THE CRITICAL ADDITION
+# It enables the Netlify Next.js Runtime plugin, 
+# which overrides standard static routing and creates the necessary
+# serverless functions for dynamic and server-rendered pages.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# REMOVED the old redirect:
+# The Next.js plugin handles all routing and 404/200 status codes correctly.
+# Remove:
+# [[redirects]]
+#   from = "/*"
+#   to = "/index.html"
+#   status = 200
