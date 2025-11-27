@@ -1,7 +1,9 @@
 export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
-import { Resend } from "resend"
+// REMOVED: import { Resend } from "resend"
+// ADDED: Nodemailer
+import * as nodemailer from "nodemailer" 
 import type { CustomerData } from "@/components/customer-data-modal"
 import type { HearingTestResult } from "@/lib/hearing-test-data"
 
@@ -21,36 +23,45 @@ export async function POST(request: Request) {
       console.error("[v0] Missing customer data or test results")
       return NextResponse.json({ error: "Missing customer data or test results" }, { status: 400 })
     }
-
-    if (!process.env.RESEND_API_KEY) {
-      console.error("[v0] RESEND_API_KEY environment variable is not set")
-      return NextResponse.json(
-        {
-          error: "Email service not properly configured",
-          details:
-            "RESEND_API_KEY environment variable is missing. Please add it to your Vercel project environment variables or local .env.local file.",
-          setupRequired: true,
-        },
-        { status: 500 },
-      )
-    }
-
-    const resend = new Resend(process.env.RESEND_API_KEY)
+    
+    // --- NODEMAILER CREDENTIAL CHECK ---
+    const gmailUser = process.env.GMAIL_USER
+    const gmailAppPassword = process.env.GMAIL_APP_PASSWORD
     const recipientEmail = process.env.RESEND_RECIPIENT_EMAIL || "adhamemad.oracle@gmail.com"
 
+    if (!gmailUser || !gmailAppPassword) {
+        console.error("[v0] GMAIL_USER or GMAIL_APP_PASSWORD is not configured")
+        return NextResponse.json(
+          {
+            error: "Email credentials not configured. Please add GMAIL_USER and GMAIL_APP_PASSWORD to Netlify environment variables.",
+            setupRequired: true,
+          },
+          { status: 500 }
+        );
+    }
+    
     if (!recipientEmail) {
       console.error("[v0] RESEND_RECIPIENT_EMAIL is not configured")
       return NextResponse.json(
         {
           error: "Email recipient not configured",
-          details: "Please add RESEND_RECIPIENT_EMAIL to environment variables",
+          details: "Please add RESEND_RECIPIENT_EMAIL to Netlify environment variables",
           setupRequired: true,
         },
         { status: 500 },
       )
     }
 
-    // Calculate averages
+    // --- NODEMAILER TRANSPORTER SETUP ---
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: gmailUser, 
+            pass: gmailAppPassword, // The 16-character App Password
+        },
+    });
+
+    // Calculate averages (kept for context, but not directly used in the email)
     const leftEarAvg = leftEarResults.reduce((sum, r) => sum + r.threshold, 0) / leftEarResults.length
     const rightEarAvg = rightEarResults.reduce((sum, r) => sum + r.threshold, 0) / rightEarResults.length
 
@@ -63,7 +74,7 @@ export async function POST(request: Request) {
       minute: "2-digit",
     })
 
-    // Create beautiful HTML email
+    // Create beautiful HTML email (Content is unchanged)
     const htmlContent = `
       <!DOCTYPE html>
       <html lang="en">
@@ -216,15 +227,12 @@ export async function POST(request: Request) {
       </head>
       <body>
         <div class="container">
-          <!-- Header -->
           <div class="header">
             <h1>Al-Barakat Hearing Care</h1>
             <p>Your Professional Hearing Test Results</p>
           </div>
           
-          <!-- Content -->
           <div class="content">
-            <!-- Customer Info -->
             <div class="customer-info">
               <h3>Patient Information</h3>
               <div class="info-grid">
@@ -255,7 +263,6 @@ export async function POST(request: Request) {
               </div>
             </div>
             
-            <!-- Results -->
             <div class="results-section">
               <h2>Test Results & Assessment</h2>
               
@@ -309,7 +316,6 @@ export async function POST(request: Request) {
             </div>
           </div>
           
-          <!-- Footer -->
           <div class="footer">
             <p><strong>Test Completed:</strong> ${testDate}</p>
             <p>Al-Barakat Hearing Care Centers | Professional Hearing Healthcare</p>
@@ -322,21 +328,22 @@ export async function POST(request: Request) {
       </html>
     `
 
-    // Send email
-    const data = await resend.emails.send({
-      from: "Al-Barakat Hearing Care <onboarding@resend.dev>",
-      to: [recipientEmail],
+    // --- NODEMAILER SEND CALL ---
+    const data = await transporter.sendMail({
+      // The 'from' address MUST be your GMAIL_USER for Gmail's security to allow it
+      from: `Al-Barakat Hearing Care <${gmailUser}>`, 
+      to: recipientEmail,
       replyTo: customerData.email,
       subject: `Hearing Test Results - ${customerData.name}`,
       html: htmlContent,
     })
 
-    console.log("[v0] Hearing test results email sent successfully to", recipientEmail, "with ID:", data.id)
+    console.log("[v0] Hearing test results email sent successfully to", recipientEmail, "with ID:", data.messageId)
 
     return NextResponse.json({
       success: true,
       message: "Test results sent successfully",
-      id: data.id,
+      id: data.messageId,
       recipientEmail,
     })
   } catch (error: any) {

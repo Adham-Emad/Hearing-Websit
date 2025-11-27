@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic"; // prevents Next.js from running at build
 
 import { NextResponse } from "next/server";
-import { Resend } from "resend";
+// 1. IMPORT NODEMAILER INSTEAD OF RESEND
+import * as nodemailer from "nodemailer";
 
 export async function POST(request: Request) {
   try {
@@ -12,19 +13,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Check if API key is configured
-    if (!process.env.RESEND_API_KEY) {
-      console.error("[v0] RESEND_API_KEY is not configured");
+    // 2. DEFINE AND CHECK NODEMAILER ENVIRONMENT VARIABLES
+    const gmailUser = process.env.GMAIL_USER;
+    const gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
+    const recipientEmail = process.env.RESEND_RECIPIENT_EMAIL;
+
+    if (!gmailUser || !gmailAppPassword) {
+      console.error("[v0] GMAIL_USER or GMAIL_APP_PASSWORD is not configured");
       return NextResponse.json(
         {
-          error: "Email service not configured. Please add RESEND_API_KEY to environment variables.",
+          error: "Email credentials not configured. Please add GMAIL_USER and GMAIL_APP_PASSWORD to environment variables.",
           setupRequired: true,
         },
         { status: 500 }
       );
     }
-
-    const recipientEmail = process.env.RESEND_RECIPIENT_EMAIL;
+    
+    // Check for the recipient email (still necessary)
     if (!recipientEmail) {
       console.error("[v0] RESEND_RECIPIENT_EMAIL is not configured");
       return NextResponse.json(
@@ -36,13 +41,20 @@ export async function POST(request: Request) {
       );
     }
 
-    // Initialize Resend inside handler
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    // 3. INITIALIZE NODEMAILER TRANSPORTER (SMTP Client)
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: gmailUser, // Your Gmail address
+            pass: gmailAppPassword, // Your 16-character App Password
+        },
+    });
 
-    // Send email using Resend
-    const data = await resend.emails.send({
-      from: "HearClear Contact <onboarding@resend.dev>",
-      to: [recipientEmail],
+    // 4. SEND EMAIL USING NODEMAILER (Note: 'data' variable now contains Nodemailer response)
+    const data = await transporter.sendMail({
+      // The 'from' address MUST be your GMAIL_USER for Gmail's security to allow it
+      from: `HearClear Contact <${gmailUser}>`, 
+      to: recipientEmail,
       replyTo: email,
       subject: `New Contact Form Message from ${name}`,
       html: `
@@ -95,7 +107,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       message: "Email sent successfully",
-      id: data.id,
+      id: data.messageId,
     });
   } catch (error: any) {
     console.error("[v0] Error sending email:", error);
