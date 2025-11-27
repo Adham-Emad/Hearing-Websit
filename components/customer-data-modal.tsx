@@ -80,7 +80,7 @@ export function CustomerDataModal({ open, onComplete }: CustomerDataModalProps) 
 
   const handleComplete = () => {
     if (!selectedBranch) {
-      alert("Please select a branch")
+      alert("Please select a Nearest Location")
       return
     }
     onComplete(formData)
@@ -122,7 +122,7 @@ export function CustomerDataModal({ open, onComplete }: CustomerDataModalProps) 
                     <Input
                       id="name"
                       required
-                      placeholder="John Doe"
+                      placeholder="Your Name..."
                       value={formData.name}
                       onChange={(e) => handleInputChange("name", e.target.value)}
                       className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-blue-500/20"
@@ -199,7 +199,7 @@ export function CustomerDataModal({ open, onComplete }: CustomerDataModalProps) 
                     id="email"
                     type="email"
                     required
-                    placeholder="john@example.com"
+                    placeholder="Email@example.com"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-blue-500/20"
@@ -222,7 +222,7 @@ export function CustomerDataModal({ open, onComplete }: CustomerDataModalProps) 
             <>
               {/* Branch selection header */}
               <div className="bg-gradient-to-r from-blue-600 to-teal-500 px-8 py-8 text-white">
-                <h2 className="text-2xl font-bold mb-2">Select Your Branch</h2>
+                <h2 className="text-2xl font-bold mb-2">Select Your Nearest Location</h2>
                 <p className="text-blue-100 text-sm">Choose the location nearest to you</p>
               </div>
 
