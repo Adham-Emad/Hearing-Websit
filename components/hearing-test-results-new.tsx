@@ -8,8 +8,6 @@ import type { HearingTestResult } from "@/lib/hearing-test-data"
 import { calculateOverallPercentage, getHearingCategory } from "@/lib/hearing-test-data"
 import { useState, useEffect } from "react"
 
-// ... (Interface and component function start are unchanged)
-
 interface HearingTestResultsNewProps {
   result: HearingTestResult
   onRetake: () => void
@@ -29,37 +27,19 @@ export function HearingTestResultsNew({
   const [emailSent, setEmailSent] = useState(false)
   const [emailError, setEmailError] = useState<string | null>(null)
 
-  // Calculate accurate percentage and category first
-  const overallPercentage = calculateOverallPercentage(result.leftEarResults, result.rightEarResults)
-  const hearingCategory = getHearingCategory(overallPercentage)
-  
-  // Map the calculated percentage to the severity assessment for the title
-  const getAssessmentSeverity = (percentage: number): "normal" | "mild-loss" | "moderate-loss" | "severe-loss" => {
-    if (percentage >= 90) return "normal" // Assumes 90-100% is 'normal capacity'
-    if (percentage >= 75) return "mild-loss"
-    if (percentage >= 50) return "moderate-loss"
-    return "severe-loss"
-  }
-
-  // Use the calculated severity to determine the display info
-  const currentSeverity = getAssessmentSeverity(overallPercentage)
-
-  // ... (useEffect for email sending is unchanged)
-
   useEffect(() => {
     const sendEmailAutomatically = async () => {
       if (!customerData || emailSent) return
 
       setIsSendingEmail(true)
       try {
-        console.log("Automatically sending test results email...")
+        console.log("[v0] Automatically sending test results email...")
         const response = await fetch("/api/send-hearing-test-results", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             customerData,
-            // IMPORTANT: Pass the accurate overallAssessment to the API for the email
-            testResults: { ...result, overallAssessment: currentSeverity },
+            testResults: result,
             leftEarResults: leftEarResults || result.leftEarResults,
             rightEarResults: rightEarResults || result.rightEarResults,
           }),
@@ -72,9 +52,9 @@ export function HearingTestResultsNew({
         }
 
         setEmailSent(true)
-        console.log(" Test results sent to email successfully:", data)
+        console.log("[v0] Test results sent to email successfully:", data)
       } catch (error: any) {
-        console.error(" Error sending results:", error)
+        console.error("[v0] Error sending results:", error)
         setEmailError(error.message)
       } finally {
         setIsSendingEmail(false)
@@ -82,7 +62,7 @@ export function HearingTestResultsNew({
     }
 
     sendEmailAutomatically()
-  }, [customerData, emailSent, result, leftEarResults, rightEarResults, currentSeverity])
+  }, [customerData, emailSent, result, leftEarResults, rightEarResults])
 
   const handleSendResults = async () => {
     if (!customerData) {
@@ -97,8 +77,7 @@ export function HearingTestResultsNew({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           customerData,
-          // IMPORTANT: Pass the accurate overallAssessment to the API for the email
-          testResults: { ...result, overallAssessment: currentSeverity },
+          testResults: result,
           leftEarResults: leftEarResults || result.leftEarResults,
           rightEarResults: rightEarResults || result.rightEarResults,
         }),
@@ -110,9 +89,9 @@ export function HearingTestResultsNew({
       }
 
       setEmailSent(true)
-      console.log("Test results sent to email successfully")
+      console.log("[v0] Test results sent to email successfully")
     } catch (error: any) {
-      console.error("Error sending results:", error)
+      console.error("[v0] Error sending results:", error)
       alert(`Error sending results: ${error.message}`)
     } finally {
       setIsSendingEmail(false)
@@ -120,8 +99,7 @@ export function HearingTestResultsNew({
   }
 
   const getAssessmentInfo = () => {
-    // **FIXED: Use the calculated severity instead of the result.overallAssessment**
-    switch (currentSeverity) { 
+    switch (result.overallAssessment) {
       case "normal":
         return {
           title: "You likely have good hearing.",
@@ -164,20 +142,14 @@ export function HearingTestResultsNew({
   const leftEarAvg = result.leftEarResults.reduce((sum, r) => sum + r.threshold, 0) / result.leftEarResults.length
   const rightEarAvg = result.rightEarResults.reduce((sum, r) => sum + r.threshold, 0) / result.rightEarResults.length
 
+  const overallPercentage = calculateOverallPercentage(result.leftEarResults, result.rightEarResults)
+  const hearingCategory = getHearingCategory(overallPercentage)
 
   const getHearingLevel = (threshold: number) => {
     if (threshold < 0.25) return "Good"
     if (threshold < 0.4) return "Fair"
     if (threshold < 0.6) return "Loss"
     return "Significant Loss"
-  }
-  
-  // --- ADDED: Helper function to safely calculate percentage for display ---
-  const getSafePercentage = (threshold: number) => {
-    // Assumes 1 is max loss (0% capacity) and 0 is no loss (100% capacity).
-    // Clamps the value to be between 0 and 1 before inversion (1 - threshold) to prevent negative results.
-    const clampedThreshold = Math.max(0, Math.min(1, threshold));
-    return Math.round((1 - clampedThreshold) * 100);
   }
 
   return (
@@ -201,22 +173,21 @@ export function HearingTestResultsNew({
           <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-red-700 font-semibold">⚠️ Email Error: {emailError}</p>
             <p className="text-red-600 text-sm mt-2">
-              {/* --- CORRECTED MESSAGE FROM PREVIOUS STEP --- */}
-              Please ensure **GMAIL_USER**, **GMAIL_APP_PASSWORD**, and **CONTACT_RECIPIENT_EMAIL** are configured in environment variables.
+              Please ensure RESEND_API_KEY is configured in environment variables.
             </p>
           </div>
         )}
 
         {isSendingEmail && (
           <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-blue-700 font-semibold">📧 Sending test results to Company mail, we will contact you soon...</p>
+            <p className="text-blue-700 font-semibold">📧 Sending test results to adhamemad.weschool@gmail.com...</p>
           </div>
         )}
 
         {emailSent && !emailError && (
           <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
             <p className="text-green-700 font-semibold">
-              ✓ Test results sent successfully to Company mail.
+              ✓ Test results sent successfully to adhamemad.weschool@gmail.com
             </p>
             <p className="text-green-600 text-sm mt-1">
               Customer contact info included: {customerData?.name} ({customerData?.email})
@@ -253,8 +224,7 @@ export function HearingTestResultsNew({
                 <span>Good</span>
               </div>
               <div className="relative h-12 rounded-full overflow-hidden bg-gradient-to-r from-red-500 via-amber-500 to-green-500">
-                {/* --- EDITED: Used getSafePercentage for visualization positioning --- */}
-                <div className="absolute top-0 bottom-0 w-1 bg-black" style={{ left: `${getSafePercentage(leftEarAvg)}%` }}>
+                <div className="absolute top-0 bottom-0 w-1 bg-black" style={{ left: `${(1 - leftEarAvg) * 100}%` }}>
                   <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-2xl">↓</div>
                   <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs font-semibold whitespace-nowrap">
                     Your hearing ability
@@ -272,12 +242,10 @@ export function HearingTestResultsNew({
                     <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-primary rounded-full"
-                        // --- EDITED: Used getSafePercentage for bar width ---
-                        style={{ width: `${getSafePercentage(r.threshold)}%` }}
+                        style={{ width: `${(1 - r.threshold) * 100}%` }}
                       />
                     </div>
-                    {/* --- EDITED: Used getSafePercentage for percentage text --- */}
-                    <span className="text-xs font-medium w-12">{getSafePercentage(r.threshold)}%</span>
+                    <span className="text-xs font-medium w-12">{Math.round((1 - r.threshold) * 100)}%</span>
                   </div>
                 </div>
               ))}
@@ -301,8 +269,7 @@ export function HearingTestResultsNew({
                 <span>Good</span>
               </div>
               <div className="relative h-12 rounded-full overflow-hidden bg-gradient-to-r from-red-500 via-amber-500 to-green-500">
-                {/* --- EDITED: Used getSafePercentage for visualization positioning --- */}
-                <div className="absolute top-0 bottom-0 w-1 bg-black" style={{ left: `${getSafePercentage(rightEarAvg)}%` }}>
+                <div className="absolute top-0 bottom-0 w-1 bg-black" style={{ left: `${(1 - rightEarAvg) * 100}%` }}>
                   <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-2xl">↓</div>
                   <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs font-semibold whitespace-nowrap">
                     Your hearing ability
@@ -320,12 +287,10 @@ export function HearingTestResultsNew({
                     <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-primary rounded-full"
-                         // --- EDITED: Used getSafePercentage for bar width ---
-                        style={{ width: `${getSafePercentage(r.threshold)}%` }}
+                        style={{ width: `${(1 - r.threshold) * 100}%` }}
                       />
                     </div>
-                    {/* --- EDITED: Used getSafePercentage for percentage text --- */}
-                    <span className="text-xs font-medium w-12">{getSafePercentage(r.threshold)}%</span>
+                    <span className="text-xs font-medium w-12">{Math.round((1 - r.threshold) * 100)}%</span>
                   </div>
                 </div>
               ))}
